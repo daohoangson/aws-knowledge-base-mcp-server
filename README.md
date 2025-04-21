@@ -1,5 +1,9 @@
 # AWS Knowledge Base MCP Server
 
+## Usage
+
+<table><tr><td>Claude Desktop</td><td>GitHub Copilot</td></tr><tr><td>
+
 ```json
 {
   "mcpServers": {
@@ -14,7 +18,28 @@
 }
 ```
 
-![](./claude.png)
+</td><td>
+
+```json
+{
+  "servers": {
+    "aws-knowledge-base": {
+      "type": "sse",
+      "url": "https://aws-knowledge-base-mcp-server.daohoangson.workers.dev/sse"
+    }
+  }
+}
+```
+
+</tr><tr><td>
+
+![](./claude_desktop.png)
+
+</td><td>
+
+![](./github_copilot.png)
+
+</td></tr></table>
 
 A Model Context Protocol (MCP) server implementation that enables AI assistants to search through Knowledge Base using AWS Bedrock and Cloudflare Workers. This project consists of two main components:
 
@@ -72,7 +97,7 @@ npx cdk deploy
 
 The MCP server provides a `search_knowledge_base` tool that can be used by AI assistants to search through indexed documents. The tool accepts a query string and returns relevant documentation.
 
-## Environment Variables
+### Environment Variables
 
 - `AWS_ACCESS_KEY_ID` - AWS access key for Bedrock API
 - `AWS_SECRET_ACCESS_KEY` - AWS secret key for Bedrock API
