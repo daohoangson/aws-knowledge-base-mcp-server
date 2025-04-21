@@ -48,7 +48,7 @@ A Model Context Protocol (MCP) server implementation that enables AI assistants 
 1. **Infrastructure** (`/cdk`): Sets up the resources including:
 
    - AWS Bedrock Knowledge Base for document embeddings
-   - Aurora Serverless v2 with pgvector for efficient document search
+   - Pinecone for efficient document search
    - AWS S3 bucket for storing documentation files
    - AWS IAM user and policies for API access
 
@@ -62,7 +62,10 @@ graph TD
   subgraph AWS
     S3[S3 Bucket] -->|Stores Documents| KnowledgeBase
     TitanModel[Titan Embed Text V2] -->|Embedding Model| KnowledgeBase
-    KnowledgeBase[Bedrock Knowledge Base] -->|Vector Embeddings| Aurora[Aurora Serverless v2<br />with pgvector]
+  end
+
+  subgraph Pinecone
+    KnowledgeBase[Bedrock Knowledge Base] -->|Vector Embeddings| PineconeDb[Vector Database]
   end
 
   subgraph Cloudflare
@@ -77,6 +80,7 @@ graph TD
 ### Environment Variables
 
 - `CDK_APP_ID` - Unique identifier for the CDK stack
+- `PINECONE_API_KEY` - API key for Pinecone vector store
 
 ### Setup
 
@@ -88,6 +92,7 @@ npm install
 
 # Set required environment variables
 export CDK_APP_ID="your-app-id"
+export PINECONE_API_KEY="your-pinecone-api-key"
 
 # Deploy the stack
 npx cdk deploy
