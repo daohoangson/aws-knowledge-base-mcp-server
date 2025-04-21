@@ -152,7 +152,7 @@ Assumptions:
   - 2 NAT gateways via [PRIVATE_WITH_EGRESS](https://github.com/awslabs/generative-ai-cdk-constructs/blob/601e3ad/src/common/helpers/vpc-helper.ts)
   - Alternatives:
     - Amazon OpenSearch Serverless for $350/mo minimum because it needs at least 1 indexing OCU and 1 searching OCU at [$0.24 / OCU-hour](https://aws.amazon.com/opensearch-service/pricing/)
-    - Pinecone Standard plan for $25/mo with [$15 usage credits](https://www.pinecone.io/pricing/)
+    - Pinecone Standard plan for $25/mo with [$15 usage credits](https://www.pinecone.io/pricing/) → see PR https://github.com/daohoangson/aws-knowledge-base-mcp-server/pull/1
 - https://aws.amazon.com/bedrock/pricing/
 - https://aws.amazon.com/s3/pricing/
 - CloudFlare Standard plan includes [10M requests and 3K CPU-seconds](https://developers.cloudflare.com/workers/platform/pricing/).
