@@ -8,7 +8,7 @@ import {
   CustomResource,
   SecretValue,
 } from "aws-cdk-lib";
-import { Runtime } from "aws-cdk-lib/aws-lambda";
+import * as lambda from "aws-cdk-lib/aws-lambda";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import * as cr from "aws-cdk-lib/custom-resources";
 import * as iam from "aws-cdk-lib/aws-iam";
@@ -43,7 +43,7 @@ export class CdkStack extends Stack {
       environment: {
         PINECONE_SECRET_NAME: pineconeSecret.secretName,
       },
-      runtime: Runtime.NODEJS_20_X,
+      runtime: lambda.Runtime.NODEJS_20_X,
       timeout: Duration.minutes(1),
     });
     pineconeSecret.grantRead(pineconeCrHandler);
@@ -105,6 +105,49 @@ export class CdkStack extends Stack {
     });
     policy.attachToUser(user);
 
+    const mcpServerHandler = new NodejsFunction(this, "mcpServer", {
+      entry: join(__dirname, "../lambda/mcpServer/index.ts"),
+      runtime: lambda.Runtime.NODEJS_20_X,
+      timeout: Duration.minutes(15),
+
+      // https://github.com/awslabs/aws-lambda-web-adapter
+      architecture: lambda.Architecture.ARM_64,
+      bundling: {
+        commandHooks: {
+          beforeInstall: () => [],
+          beforeBundling: () => [],
+          afterBundling: (inputDir, outputDir) => [
+            `cp ${inputDir}/lambda/mcpServer/run.sh ${outputDir}`,
+          ],
+        },
+      },
+      environment: {
+        AWS_LAMBDA_EXEC_WRAPPER: "/opt/bootstrap",
+        AWS_LWA_INVOKE_MODE: "response_stream",
+        KNOWLEDGE_BASE_ID: knowledgeBase.knowledgeBaseId,
+        RUST_LOG: "info",
+      },
+      handler: "run.sh",
+      layers: [
+        lambda.LayerVersion.fromLayerVersionArn(
+          this,
+          "layer",
+          `arn:aws:lambda:${this.region}:753240598075:layer:LambdaAdapterLayerArm64:20`
+        ),
+      ],
+    });
+    mcpServerHandler.addToRolePolicy(
+      new iam.PolicyStatement({
+        actions: ["bedrock:Retrieve"],
+        resources: [knowledgeBase.knowledgeBaseArn],
+      })
+    );
+
+    const mcpServerUrl = mcpServerHandler.addFunctionUrl({
+      authType: lambda.FunctionUrlAuthType.NONE,
+      invokeMode: lambda.InvokeMode.RESPONSE_STREAM,
+    });
+
     new CfnOutput(this, "AwsAccessKeyId", { value: accessKey.accessKeyId });
     new CfnOutput(this, "AwsRegion", { value: this.region });
     new CfnOutput(this, "AwsSecretAccessKey", {
@@ -117,5 +160,6 @@ export class CdkStack extends Stack {
     new CfnOutput(this, "KnowledgeBaseId", {
       value: knowledgeBase.knowledgeBaseId,
     });
+    new CfnOutput(this, "McpServerUrl ", { value: mcpServerUrl.url });
   }
 }
