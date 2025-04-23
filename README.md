@@ -155,4 +155,4 @@ Assumptions:
     - Pinecone Standard plan for $25/mo with [$15 usage credits](https://www.pinecone.io/pricing/) → see PR https://github.com/daohoangson/aws-knowledge-base-mcp-server/pull/1
 - https://aws.amazon.com/bedrock/pricing/
 - https://aws.amazon.com/s3/pricing/
-- CloudFlare Standard plan includes [10M requests and 3K CPU-seconds](https://developers.cloudflare.com/workers/platform/pricing/).
+- CloudFlare Standard plan includes [10M requests and 3K CPU-seconds](https://developers.cloudflare.com/workers/platform/pricing/). Alternative: AWS Lambda → see PR https://github.com/daohoangson/aws-knowledge-base-mcp-server/pull/2
