@@ -107,34 +107,11 @@ export class CdkStack extends Stack {
 
     const mcpServerHandler = new NodejsFunction(this, "mcpServer", {
       entry: join(__dirname, "../lambda/mcpServer/index.ts"),
-      runtime: lambda.Runtime.NODEJS_20_X,
-      timeout: Duration.minutes(15),
-
-      // https://github.com/awslabs/aws-lambda-web-adapter
-      architecture: lambda.Architecture.ARM_64,
-      bundling: {
-        commandHooks: {
-          beforeInstall: () => [],
-          beforeBundling: () => [],
-          afterBundling: (inputDir, outputDir) => [
-            `cp ${inputDir}/lambda/mcpServer/run.sh ${outputDir}`,
-          ],
-        },
-      },
       environment: {
-        AWS_LAMBDA_EXEC_WRAPPER: "/opt/bootstrap",
-        AWS_LWA_INVOKE_MODE: "response_stream",
         KNOWLEDGE_BASE_ID: knowledgeBase.knowledgeBaseId,
-        RUST_LOG: "info",
       },
-      handler: "run.sh",
-      layers: [
-        lambda.LayerVersion.fromLayerVersionArn(
-          this,
-          "layer",
-          `arn:aws:lambda:${this.region}:753240598075:layer:LambdaAdapterLayerArm64:20`
-        ),
-      ],
+      runtime: lambda.Runtime.NODEJS_20_X,
+      timeout: Duration.seconds(10),
     });
     mcpServerHandler.addToRolePolicy(
       new iam.PolicyStatement({
@@ -145,7 +122,7 @@ export class CdkStack extends Stack {
 
     const mcpServerUrl = mcpServerHandler.addFunctionUrl({
       authType: lambda.FunctionUrlAuthType.NONE,
-      invokeMode: lambda.InvokeMode.RESPONSE_STREAM,
+      // invokeMode: lambda.InvokeMode.RESPONSE_STREAM,
     });
 
     new CfnOutput(this, "AwsAccessKeyId", { value: accessKey.accessKeyId });

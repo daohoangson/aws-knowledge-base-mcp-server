@@ -1,8 +1,9 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import express, { Request, Response } from "express";
-import morgan from "morgan";
+import { toFetchResponse, toReqRes } from "fetch-to-node";
+import { Hono } from "hono";
+import { handle } from "hono/aws-lambda";
 import { z } from "zod";
 import { retrieveFromBedrock } from "./bedrock";
 
@@ -29,25 +30,30 @@ const transport = new StreamableHTTPServerTransport({
   sessionIdGenerator: undefined, // stateless mode
 });
 
-const app = express();
-app.use(express.json());
-app.use(morgan("common"));
-app.post("/mcp", (req: Request, res: Response) =>
-  transport.handleRequest(req, res, req.body)
-);
-
-const port = process.env.PORT || 8080;
-server
-  .connect(transport)
-  .then(() => app.listen(port))
-  .then(() => console.log(`App is listening at ${port}`))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
+const app = new Hono();
+app.post("/mcp", async (c) => {
+  console.log(c.req);
+  const { req, res } = toReqRes(c.req.raw);
+  res.on("close", () => {
+    console.log("Response closed");
   });
+
+  const body = await c.req.json();
+  console.log("Handling request...", { body });
+  await transport.handleRequest(req, res, body);
+
+  // res.end();
+
+  console.log("Converting response...");
+  const response = await toFetchResponse(res);
+  console.log("Converted", { response });
+  return response;
+});
 
 process.on("SIGINT", async () => {
   await transport.close().catch(console.error);
   await server.close().catch(console.error);
   process.exit(0);
 });
+
+export const handler = handle(app);
