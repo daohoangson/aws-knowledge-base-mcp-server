@@ -53,10 +53,12 @@ A Model Context Protocol (MCP) server implementation that enables AI assistants 
    - AWS Lambda function for MCP server with streamable HTTP transport
    - AWS IAM user and policies for API access
 
-2. **Cloudflare MCP Server** (`/cloudflare-mcp-server`): Implements the MCP server that:
+2. **MCP Server** (`/cloudflare-mcp-server`): Implements the MCP server that:
+
    - Provides a `search_knowledge_base` tool for AI assistants
    - Integrates with AWS Bedrock for document retrieval
-   - Runs on Cloudflare Workers
+   - Supports both SSE (deprecated) and Streamable HTTP transports
+   - Runs on Cloudflare Workers with Node.js compatibility
 
 ```mermaid
 graph TD
@@ -74,8 +76,9 @@ graph TD
     Worker -->|Retrieve API| KnowledgeBase
   end
 
-  LLM[LLM Model] -->|MCP<br />Server Sent Event| Worker
-  LLM -->|MCP<br />Streamable HTTP| Lambda
+  LLM[LLM Model] -->|MCP<br />Streamable HTTP| Lambda
+  LLM -->|MCP<br />Server Sent Event| Worker
+  LLM -->|MCP<br />Streamable HTTP| Worker
 ```
 
 ## Infrastructure
@@ -101,7 +104,29 @@ export PINECONE_API_KEY="your-pinecone-api-key"
 npx cdk deploy
 ```
 
-## Cloudflare MCP Server
+## Documentation Updates
+
+The `/docs` directory contains scripts to update the knowledge base with the latest documentation:
+
+```bash
+cd docs
+
+# Set required environment variables
+export DOCS_BUCKET_NAME="your-bucket-name"
+export KNOWLEDGE_BASE_ID="your-kb-id"
+export DATA_SOURCE_ID="your-ds-id"
+
+# Run the update script
+./update.sh
+```
+
+This will:
+
+1. Download the latest documentation from CloudFlare and MCP websites
+2. Upload the files to S3
+3. Start a new ingestion job to update the knowledge base
+
+## MCP Server
 
 The MCP server provides a `search_knowledge_base` tool that can be used by AI assistants to search through indexed documents. The tool accepts a query string and returns relevant documentation.
 
