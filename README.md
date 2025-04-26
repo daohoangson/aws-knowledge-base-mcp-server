@@ -50,6 +50,7 @@ A Model Context Protocol (MCP) server implementation that enables AI assistants 
    - AWS Bedrock Knowledge Base for document embeddings
    - Pinecone for efficient document search
    - AWS S3 bucket for storing documentation files
+   - AWS Lambda function for MCP server with streamable HTTP transport
    - AWS IAM user and policies for API access
 
 2. **Cloudflare MCP Server** (`/cloudflare-mcp-server`): Implements the MCP server that:
@@ -62,6 +63,7 @@ graph TD
   subgraph AWS
     S3[S3 Bucket] -->|Stores Documents| KnowledgeBase
     TitanModel[Titan Embed Text V2] -->|Embedding Model| KnowledgeBase
+    Lambda -->|Retrieve API| KnowledgeBase
   end
 
   subgraph Pinecone
@@ -73,6 +75,7 @@ graph TD
   end
 
   LLM[LLM Model] -->|MCP<br />Server Sent Event| Worker
+  LLM -->|MCP<br />Streamable HTTP| Lambda
 ```
 
 ## Infrastructure
@@ -141,6 +144,9 @@ Assumptions:
 | ----------- | --------------------------- | --------------------- | ------------- | ------------------ |
 | AWS Bedrock | Titan Embeddings (Indexing) | $0.00002 / 1K tokens  | 75,000K       | $1.5               |
 |             | Titan Embeddings (Queries)  | $0.00002 / 1K tokens  | 300K          | $0.006             |
+| AWS Lambda  | Requests                    | $0.2 / 1M requests    | 0.003M        | $0.0006            |
+|             | ARM64 Duration              | $0.0000133334 / GB-s  | 75 GB-s       | $0.001             |
+|             | Data Transfer OUT           | $0.09 / GB            | 0.15 GB       | $0.0135            |
 | AWS S3      | Standard Storage            | $0.023 / GB-month     | 0.01 GB       | $0.00023           |
 |             | LIST Requests               | $0.005 / 1K requests  | 6K            | $0.03              |
 |             | GET Requests                | $0.0004 / 1K requests | 60K           | $0.024             |
@@ -154,6 +160,7 @@ Assumptions:
 
 - https://aws.amazon.com/bedrock/pricing/
 - https://aws.amazon.com/s3/pricing/
+- https://aws.amazon.com/lambda/pricing/
 - CloudFlare Standard plan includes [10M requests and 3K CPU-seconds](https://developers.cloudflare.com/workers/platform/pricing/).
 - Pinecone Standard plan includes [$15/mo usage credits](https://www.pinecone.io/pricing/). Alternatives:
   - Aurora PostgreSQL Serverless for $180/mo with 1 writer, 1 reader, 2 NAT gateways, etc. (see [branch `aurora`](https://github.com/daohoangson/aws-knowledge-base-mcp-server/tree/aurora#cost-estimation))
