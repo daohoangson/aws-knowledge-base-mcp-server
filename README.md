@@ -152,6 +152,10 @@ npm install
 npm run deploy
 ```
 
+## MCP Client
+
+To be updated.
+
 ## Cost Estimation
 
 Assumptions:

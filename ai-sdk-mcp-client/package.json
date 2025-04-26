@@ -1,0 +1,15 @@
+{
+  "private": true,
+  "scripts": {
+    "start": "tsx src/index.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.2",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@ai-sdk/google": "^1.2.13",
+    "ai": "^4.3.10"
+  }
+}
