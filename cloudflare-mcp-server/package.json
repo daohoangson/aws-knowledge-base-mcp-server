@@ -3,7 +3,6 @@
 	"version": "0.0.0",
 	"private": true,
 	"scripts": {
-		"postinstall": "patch-package",
 		"deploy": "wrangler deploy",
 		"dev": "wrangler dev",
 		"format": "biome format --write",
@@ -14,17 +13,13 @@
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.4",
 		"@types/node": "^22.14.1",
-		"marked": "^15.0.7",
-		"patch-package": "^8.0.0",
 		"typescript": "^5.5.2",
-		"workers-mcp": "^0.1.0-3",
 		"wrangler": "^4.12.0"
 	},
 	"dependencies": {
 		"@aws-sdk/client-bedrock-agent-runtime": "^3.787.0",
-		"@cloudflare/workers-oauth-provider": "^0.0.3",
 		"@modelcontextprotocol/sdk": "^1.10.1",
-		"agents": "^0.0.60",
+		"agents": "^0.0.65",
 		"zod": "^3.24.3"
 	}
 }

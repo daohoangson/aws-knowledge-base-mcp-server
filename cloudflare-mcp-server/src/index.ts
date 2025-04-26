@@ -1,4 +1,3 @@
-import OAuthProvider from "@cloudflare/workers-oauth-provider";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { McpAgent } from "agents/mcp";
@@ -30,17 +29,23 @@ export class KnowledgeBaseMcpServer extends McpAgent {
 	}
 }
 
-// Export the OAuth handler as the default
-export default new OAuthProvider({
-	apiRoute: "/sse",
-	// TODO: fix these types
-	// @ts-ignore
-	apiHandler: KnowledgeBaseMcpServer.mount("/sse"),
-	authorizeEndpoint: "/authorize",
-	defaultHandler: {
-		// @ts-ignore
-		fetch: () => Response.json({}),
+export default {
+	fetch(request: Request, env: Env, ctx: ExecutionContext) {
+		const url = new URL(request.url);
+
+		const envAsRecord = env as unknown as Record<string, any>;
+		if (url.pathname === "/sse" || url.pathname === "/sse/message") {
+			// HTTP with SSE transport, deprecated as of 2025-03-26
+			// https://github.com/modelcontextprotocol/modelcontextprotocol/blob/2024-11-05/docs/specification/basic/transports.md#http-with-sse
+			return KnowledgeBaseMcpServer.serveSSE("/sse").fetch(request, envAsRecord, ctx);
+		}
+
+		if (url.pathname === "/mcp") {
+			// Streamable HTTP transport
+			// https://github.com/modelcontextprotocol/modelcontextprotocol/blob/2025-03-26/docs/specification/2025-03-26/basic/transports.md#streamable-http
+			return KnowledgeBaseMcpServer.serve("/mcp").fetch(request, envAsRecord, ctx);
+		}
+
+		return Response.redirect("https://github.com/daohoangson/aws-knowledge-base-mcp-server");
 	},
-	tokenEndpoint: "/token",
-	clientRegistrationEndpoint: "/register",
-});
+};
