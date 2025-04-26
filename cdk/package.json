@@ -17,7 +17,9 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.787.0",
     "@cdklabs/generative-ai-cdk-constructs": "^0.1.304",
+    "@pinecone-database/pinecone": "^5.1.1",
     "aws-cdk-lib": "^2.190.0",
     "constructs": "^10.4.2",
     "source-map-support": "^0.5.21"
