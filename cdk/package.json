@@ -5,23 +5,31 @@
     "cdk": "bin/cdk.js"
   },
   "scripts": {
+    "dev": "ts-node lambda/mcpServer/index.ts",
     "build": "tsc",
     "watch": "tsc -w",
     "cdk": "cdk"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.149",
+    "@types/express": "^5.0.1",
+    "@types/morgan": "^1.9.9",
     "@types/node": "^22.14.1",
     "aws-cdk": "^2.1010.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   },
   "dependencies": {
+    "@aws-sdk/client-bedrock-agent-runtime": "^3.787.0",
     "@aws-sdk/client-secrets-manager": "^3.787.0",
     "@cdklabs/generative-ai-cdk-constructs": "^0.1.304",
+    "@modelcontextprotocol/sdk": "^1.10.2",
     "@pinecone-database/pinecone": "^5.1.1",
     "aws-cdk-lib": "^2.190.0",
     "constructs": "^10.4.2",
-    "source-map-support": "^0.5.21"
+    "express": "^5.1.0",
+    "morgan": "^1.10.0",
+    "source-map-support": "^0.5.21",
+    "zod": "^3.24.3"
   }
 }
