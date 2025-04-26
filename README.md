@@ -41,7 +41,7 @@
 
 </td></tr></table>
 
-A Model Context Protocol (MCP) server implementation that enables AI assistants to search through Knowledge Base using AWS Bedrock and Cloudflare Workers. This project consists of two main components:
+A Model Context Protocol (MCP) server implementation that enables AI assistants to search through Knowledge Base using AWS Bedrock and Cloudflare Workers. This project consists of three main components:
 
 ## Architecture
 
@@ -59,6 +59,11 @@ A Model Context Protocol (MCP) server implementation that enables AI assistants 
    - Integrates with AWS Bedrock for document retrieval
    - Supports both SSE (deprecated) and Streamable HTTP transports
    - Runs on Cloudflare Workers with Node.js compatibility
+
+3. **MCP Client** (`/ai-sdk-mcp-client`): A demo client that:
+   - Uses [AI SDK by Vercel](https://sdk.vercel.ai) with Gemini 2.5 Flash model
+   - Connects to the MCP server via SSE transport
+   - Streams text responses with tool calls
 
 ```mermaid
 graph TD
@@ -154,7 +159,32 @@ npm run deploy
 
 ## MCP Client
 
-To be updated.
+The demo client demonstrates how to connect to the MCP server and use its tools.
+
+### Environment Variables
+
+- `GOOGLE_GENERATIVE_AI_API_KEY` - Google AI API key for Gemini model access
+
+### Setup
+
+```bash
+cd ai-sdk-mcp-client
+
+# Install dependencies
+npm install
+
+# Set required environment variables
+export GOOGLE_GENERATIVE_AI_API_KEY="your-google-ai-api-key"
+
+# Run the demo client
+npm start -- https://aws-knowledge-base-mcp-server.daohoangson.workers.dev/sse
+```
+
+The client will:
+
+1. Connect to the MCP server via SSE transport
+2. Use Gemini model to process a sample query
+3. Stream the response with tool calls and results to the console
 
 ## Cost Estimation
 
