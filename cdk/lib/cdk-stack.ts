@@ -95,15 +95,22 @@ export class CdkStack extends Stack {
 
     const user = new iam.User(this, "user");
     const accessKey = new iam.AccessKey(this, "accessKey", { user });
-    const policy = new iam.Policy(this, "policy", {
+    new iam.Policy(this, "aiSdkPolicy", {
+      statements: [
+        new iam.PolicyStatement({
+          actions: ["bedrock:InvokeModelWithResponseStream"],
+          resources: ["*"],
+        }),
+      ],
+    }).attachToUser(user);
+    new iam.Policy(this, "cloudflarePolicy", {
       statements: [
         new iam.PolicyStatement({
           actions: ["bedrock:Retrieve"],
           resources: [knowledgeBase.knowledgeBaseArn],
         }),
       ],
-    });
-    policy.attachToUser(user);
+    }).attachToUser(user);
 
     const mcpServerHandler = new NodejsFunction(this, "mcpServer", {
       entry: join(__dirname, "../lambda/mcpServer/index.ts"),

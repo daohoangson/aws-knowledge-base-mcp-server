@@ -1,4 +1,4 @@
-import { google } from "@ai-sdk/google";
+import { bedrock } from "@ai-sdk/amazon-bedrock";
 import { experimental_createMCPClient, streamText } from "ai";
 
 (async () => {
@@ -19,7 +19,7 @@ import { experimental_createMCPClient, streamText } from "ai";
     const tools = await client.tools();
 
     const { fullStream } = streamText({
-      model: google("gemini-2.5-flash-preview-04-17"),
+      model: bedrock("amazon.nova-pro-v1:0"),
       tools,
       maxSteps: 10,
       messages: [
