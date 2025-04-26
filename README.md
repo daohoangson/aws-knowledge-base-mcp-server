@@ -137,27 +137,24 @@ Assumptions:
 - Each query is ~100 tokens
 - Each request returns 10 documents
 
-| Service    | SKU                         | Listing Price         | Monthly Count  | Monthly Cost (USD) |
-| ---------- | --------------------------- | --------------------- | -------------- | ------------------ |
-| Vector DB  | PostgreSQL Serverless v2    | $0.12 / ACU‑hour      | 0.5 \* 730h x2 | $87.6              |
-|            | PostgreSQL Standard Storage | $0.10 / GB-month      | 10 GB          | $1                 |
-|            | NAT Gateways                | $0.045 / hour         | 730h x2        | $65.7              |
-|            | VPC Endpoints               | $0.01 / AZ-hour       | 730h x2 x2     | $29.2              |
-| LLMOps     | Titan Embeddings (Indexing) | $0.00002 / 1K tokens  | 75,000K        | $1.5               |
-|            | Titan Embeddings (Queries)  | $0.00002 / 1K tokens  | 300K           | $0.006             |
-| Storage    | S3 Standard Storage         | $0.023 / GB-month     | 0.01 GB        | $0.00023           |
-|            | S3 LIST Requests            | $0.005 / 1K requests  | 6K             | $0.03              |
-|            | S3 GET Requests             | $0.0004 / 1K requests | 60K            | $0.024             |
-| CloudFlare | Standard                    | $5 / month            | 1              | $5                 |
-|            | Requests                    | $0.30 / million       | 0.003          | $0.0009            |
-|            | CPU time                    | $0.00002 / CPU-second | 15             | $0.0003            |
+| Service     | SKU                         | Listing Price         | Monthly Count | Monthly Cost (USD) |
+| ----------- | --------------------------- | --------------------- | ------------- | ------------------ |
+| AWS Bedrock | Titan Embeddings (Indexing) | $0.00002 / 1K tokens  | 75,000K       | $1.5               |
+|             | Titan Embeddings (Queries)  | $0.00002 / 1K tokens  | 300K          | $0.006             |
+| AWS S3      | Standard Storage            | $0.023 / GB-month     | 0.01 GB       | $0.00023           |
+|             | LIST Requests               | $0.005 / 1K requests  | 6K            | $0.03              |
+|             | GET Requests                | $0.0004 / 1K requests | 60K           | $0.024             |
+| CloudFlare  | Standard                    | $5 / month            | 1             | $5                 |
+|             | Requests                    | $0.30 / million       | 0.003         | $0.0009            |
+|             | CPU time                    | $0.00002 / CPU-second | 15            | $0.0003            |
+| Pinecone    | Standard                    | $25 / month           | 1             | $25                |
+|             | Vector Storage              | $0.33 / GB-month      | 0.008 GB      | $0.003             |
+|             | Vector Inserts (Writes)     | $4 / million writes   | 0.06M         | $0.24              |
+|             | Vector Queries (Reads)      | $16 / million reads   | 0.03M         | $0.48              |
 
-- https://aws.amazon.com/rds/aurora/pricing/
-  - 2 Aurora instances: 1 writer, 1 reader via [scaleWithWriter: true](https://github.com/awslabs/generative-ai-cdk-constructs/blob/601e3ad/src/cdk-lib/amazonaurora/aurora-vector-store.ts)
-  - 2 NAT gateways via [PRIVATE_WITH_EGRESS](https://github.com/awslabs/generative-ai-cdk-constructs/blob/601e3ad/src/common/helpers/vpc-helper.ts)
-  - Alternatives:
-    - Amazon OpenSearch Serverless for $350/mo minimum because it needs at least 1 indexing OCU and 1 searching OCU at [$0.24 / OCU-hour](https://aws.amazon.com/opensearch-service/pricing/)
-    - Pinecone Standard plan for $25/mo with [$15 usage credits](https://www.pinecone.io/pricing/)
 - https://aws.amazon.com/bedrock/pricing/
 - https://aws.amazon.com/s3/pricing/
 - CloudFlare Standard plan includes [10M requests and 3K CPU-seconds](https://developers.cloudflare.com/workers/platform/pricing/).
+- Pinecone Standard plan includes [$15/mo usage credits](https://www.pinecone.io/pricing/). Alternatives:
+  - Aurora PostgreSQL Serverless for $180/mo with 1 writer, 1 reader, 2 NAT gateways, etc. (see [branch `aurora`](https://github.com/daohoangson/aws-knowledge-base-mcp-server/tree/aurora#cost-estimation))
+  - Amazon OpenSearch Serverless for $350/mo minimum because it needs at least 1 indexing OCU and 1 searching OCU at [$0.24 / OCU-hour](https://aws.amazon.com/opensearch-service/pricing/)
