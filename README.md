@@ -52,10 +52,12 @@ A Model Context Protocol (MCP) server implementation that enables AI assistants 
    - AWS S3 bucket for storing documentation files
    - AWS IAM user and policies for API access
 
-2. **Cloudflare MCP Server** (`/cloudflare-mcp-server`): Implements the MCP server that:
+2. **MCP Server** (`/cloudflare-mcp-server`): Implements the MCP server that:
+
    - Provides a `search_knowledge_base` tool for AI assistants
    - Integrates with AWS Bedrock for document retrieval
-   - Runs on Cloudflare Workers
+   - Supports both SSE (deprecated) and Streamable HTTP transports
+   - Runs on Cloudflare Workers with Node.js compatibility
 
 ```mermaid
 graph TD
@@ -70,6 +72,7 @@ graph TD
   end
 
   LLM[LLM Model] -->|MCP<br />Server Sent Event| Worker
+  LLM -->|MCP<br />Streamable HTTP| Worker
 ```
 
 ## Infrastructure
@@ -93,7 +96,29 @@ export CDK_APP_ID="your-app-id"
 npx cdk deploy
 ```
 
-## Cloudflare MCP Server
+## Documentation Updates
+
+The `/docs` directory contains scripts to update the knowledge base with the latest documentation:
+
+```bash
+cd docs
+
+# Set required environment variables
+export DOCS_BUCKET_NAME="your-bucket-name"
+export KNOWLEDGE_BASE_ID="your-kb-id"
+export DATA_SOURCE_ID="your-ds-id"
+
+# Run the update script
+./update.sh
+```
+
+This will:
+
+1. Download the latest documentation from CloudFlare and MCP websites
+2. Upload the files to S3
+3. Start a new ingestion job to update the knowledge base
+
+## MCP Server
 
 The MCP server provides a `search_knowledge_base` tool that can be used by AI assistants to search through indexed documents. The tool accepts a query string and returns relevant documentation.
 
@@ -134,7 +159,7 @@ Assumptions:
 
 | Service    | SKU                         | Listing Price         | Monthly Count  | Monthly Cost (USD) |
 | ---------- | --------------------------- | --------------------- | -------------- | ------------------ |
-| Vector DB  | PostgreSQL Serverless v2    | $0.12 / ACU‑hour      | 0.5 \* 730h x2 | $87.6              |
+| Vector DB  | PostgreSQL Serverless v2    | $0.12 / ACU‑hour      | 0.5 \* 730h x2 | $87.6              |
 |            | PostgreSQL Standard Storage | $0.10 / GB-month      | 10 GB          | $1                 |
 |            | NAT Gateways                | $0.045 / hour         | 730h x2        | $65.7              |
 |            | VPC Endpoints               | $0.01 / AZ-hour       | 730h x2 x2     | $29.2              |
