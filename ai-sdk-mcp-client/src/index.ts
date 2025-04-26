@@ -1,27 +1,34 @@
 import { bedrock } from "@ai-sdk/amazon-bedrock";
-import { experimental_createMCPClient, streamText } from "ai";
+import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse";
+import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp";
+import { experimental_createMCPClient, MCPTransport, streamText } from "ai";
 
 (async () => {
   const url = new URL(process.argv[2]);
-  if (url.pathname !== "/sse") {
-    console.error(`Unsupported URL: ${url}`);
-    process.exit(1);
+  let transport: MCPTransport;
+  switch (url.pathname) {
+    case "/mcp":
+      transport = new StreamableHTTPClientTransport(url);
+      break;
+    case "/sse":
+      transport = new SSEClientTransport(url);
+      break;
+    default:
+      console.error(`Unsupported URL: ${url.pathname}`);
+      process.exit(1);
   }
 
-  const client = await experimental_createMCPClient({
-    transport: {
-      type: "sse",
-      url: url.toString(),
-    },
-  });
+  const client = await experimental_createMCPClient({ transport });
+  console.warn("Created MCP client");
 
   try {
     const tools = await client.tools();
+    console.warn("Got MCP tools", Object.keys(tools));
 
     const { fullStream } = streamText({
       model: bedrock("amazon.nova-pro-v1:0"),
       tools,
-      maxSteps: 10,
+      maxSteps: 3,
       messages: [
         {
           role: "user",
@@ -56,6 +63,6 @@ import { experimental_createMCPClient, streamText } from "ai";
       }
     }
   } finally {
-    client.close();
+    await transport.close();
   }
 })();
