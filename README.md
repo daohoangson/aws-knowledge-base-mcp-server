@@ -41,7 +41,7 @@
 
 </td></tr></table>
 
-A Model Context Protocol (MCP) server implementation that enables AI assistants to search through Knowledge Base using AWS Bedrock and Cloudflare Workers. This project consists of two main components:
+A Model Context Protocol (MCP) server implementation that enables AI assistants to search through Knowledge Base using AWS Bedrock and Cloudflare Workers. This project consists of three main components:
 
 ## Architecture
 
@@ -57,8 +57,13 @@ A Model Context Protocol (MCP) server implementation that enables AI assistants 
 
    - Provides a `search_knowledge_base` tool for AI assistants
    - Integrates with AWS Bedrock for document retrieval
-   - Supports both SSE (deprecated) and Streamable HTTP transports
+   - Supports both SSE (deprecated) and streamable HTTP transports
    - Runs on Cloudflare Workers with Node.js compatibility
+
+3. **MCP Client** (`/ai-sdk-mcp-client`): A demo client that:
+   - Uses [AI SDK by Vercel](https://sdk.vercel.ai) with Nova Pro model
+   - Acts as a MCP client, supporting both SSE and streamable HTTP transports
+   - Streams text responses with tool calls
 
 ```mermaid
 graph TD
@@ -66,6 +71,7 @@ graph TD
     S3[S3 Bucket] -->|Stores Documents| KnowledgeBase
     TitanModel[Titan Embed Text V2] -->|Embedding Model| KnowledgeBase
     Lambda -->|Retrieve API| KnowledgeBase
+    NovaPro[Nova Pro]
   end
 
   subgraph Pinecone
@@ -76,32 +82,41 @@ graph TD
     Worker -->|Retrieve API| KnowledgeBase
   end
 
-  LLM[LLM Model] -->|MCP<br />Streamable HTTP| Lambda
-  LLM -->|MCP<br />Server Sent Event| Worker
-  LLM -->|MCP<br />Streamable HTTP| Worker
+  Demo -->|InvokeModel API| NovaPro
+  Demo -->|MCP<br />Streamable HTTP| Lambda
+  Demo -->|MCP<br />Server Sent Event| Worker
+  Demo -->|MCP<br />Streamable HTTP| Worker
 ```
 
 ## Infrastructure
-
-### Environment Variables
-
-- `CDK_APP_ID` - Unique identifier for the CDK stack
-- `PINECONE_API_KEY` - API key for Pinecone vector store
 
 ### Setup
 
 ```bash
 cd cdk
 
-# Install dependencies
 npm install
 
-# Set required environment variables
-export CDK_APP_ID="your-app-id"
-export PINECONE_API_KEY="your-pinecone-api-key"
+# Unique identifier for the CDK stack
+export CDK_APP_ID="DocsMcpServer"
+
+# Pinecone credentials to manage vector databases
+export PINECONE_API_KEY="pcsk_foo"
 
 # Deploy the stack
 npx cdk deploy
+```
+
+### Example output
+
+```
+DocsMcpServer.AwsAccessKeyId = AKI123
+DocsMcpServer.AwsRegion = us-east-1
+DocsMcpServer.AwsSecretAccessKey = 4cQ456
+DocsMcpServer.DataSourceId = OD6LTXXUNH
+DocsMcpServer.DocsBucketName = docsmcpserver-docsbucketa5ce02e3-gg8g3crhlo1j
+DocsMcpServer.KnowledgeBaseId = GZUYX1EGMF
+DocsMcpServer.McpServerUrl = https://vc7ejtu4kk3ayeiqofkmxxzada0uwpzr.lambda-url.us-east-1.on.aws/
 ```
 
 ## Documentation Updates
@@ -111,10 +126,10 @@ The `/docs` directory contains scripts to update the knowledge base with the lat
 ```bash
 cd docs
 
-# Set required environment variables
-export DOCS_BUCKET_NAME="your-bucket-name"
-export KNOWLEDGE_BASE_ID="your-kb-id"
-export DATA_SOURCE_ID="your-ds-id"
+# Set environment variables from the CDK output
+export DATA_SOURCE_ID="OD6LTXXUNH"
+export DOCS_BUCKET_NAME="docsmcpserver-docsbucketa5ce02e3-gg8g3crhlo1j"
+export KNOWLEDGE_BASE_ID="GZUYX1EGMF"
 
 # Run the update script
 ./update.sh
@@ -130,27 +145,105 @@ This will:
 
 The MCP server provides a `search_knowledge_base` tool that can be used by AI assistants to search through indexed documents. The tool accepts a query string and returns relevant documentation.
 
-### Environment Variables
+Create `.dev.vars` with the following variables from the CDK output:
 
-- `AWS_ACCESS_KEY_ID` - AWS access key for Bedrock API
-- `AWS_SECRET_ACCESS_KEY` - AWS secret key for Bedrock API
-- `AWS_REGION` - AWS region (e.g., "us-east-1")
-- `KNOWLEDGE_BASE_ID` - Bedrock Knowledge Base ID
+```
+AWS_ACCESS_KEY_ID=AKI123
+AWS_REGION=us-east-1
+AWS_SECRET_ACCESS_KEY=4cQ456
+KNOWLEDGE_BASE_ID=GZUYX1EGMF
+```
 
 ### Setup
 
 ```bash
 cd cloudflare-mcp-server
 
-# Install dependencies
 npm install
 
-# Configure Wrangler
-# Update wrangler.jsonc with your AWS credentials and Knowledge Base ID
+npm run cf-typegen
 
-# Deploy to Cloudflare
+# run locally
+npm run dev
+
+# or deploy to Cloudflare
 npm run deploy
 ```
+
+## MCP Client
+
+The client demonstrates how to connect to the MCP server and use its tools with support for both SSE and streamable HTTP transports.
+
+### Setup
+
+```bash
+cd ai-sdk-mcp-client
+
+npm install
+
+# Set environment variables from the CDK output
+export AWS_ACCESS_KEY_ID="AKI123"
+export AWS_REGION="us-east-1"
+export AWS_SECRET_ACCESS_KEY="4cQ456"
+
+# Test connection to CloudFlare with SSE transport
+npm start -- https://aws-knowledge-base-mcp-server.daohoangson.workers.dev/sse
+
+# Test connection to CloudFlare with streamable HTTP transport
+npm start -- https://aws-knowledge-base-mcp-server.daohoangson.workers.dev/mcp
+
+# Test connection to Lambda
+npm start -- https://vc7ejtu4kk3ayeiqofkmxxzada0uwpzr.lambda-url.us-east-1.on.aws/mcp
+```
+
+### Example output
+
+```
+Created MCP client
+
+{ tools: [ 'search_knowledge_base' ] }
+
+<thinking> To determine if CloudFlare works with the Model Context Protocol (MCP), I need to search the knowledge base for relevant documentation. </thinking>
+
+Tool call: search_knowledge_base {
+  "query": "Does CloudFlare work with Model Context Protocol (MCP)?"
+}
+```
+
+<details><summary>Tool result</summary>
+
+````json
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "includes(\"special_feature\")) {     this.server.tool(\"specialTool\", \"Special feature\", {}, async () => {       // This tool only appears for users with the special_feature permission     });   } } ```  Benefits:  - Authorization check at the tool level ensures proper access control - Allows you to define permission checks once and reuse them across tools - Provides clear feedback to users when permission is denied - Can choose to only present tools that the agent is able to call  ## Next steps  - [Learn how to use the Workers OAuth Provider Library](https://github.com/cloudflare/workers-oauth-provider) - Learn how to use a third-party OAuth provider, using the [GitHub](/agents/guides/remote-mcp-server/#add-authentication) example MCP server.  ---  # Model Context Protocol (MCP)  URL: https://developers.cloudflare.com/agents/model-context-protocol/  You can build and deploy [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) servers on Cloudflare.  ## What is the Model Context Protocol (MCP)?  [Model Context Protocol (MCP)](https://modelcontextprotocol.io) is an open standard that connects AI systems with external applications. Think of MCP like a USB-C port for AI applications."
+    },
+    {
+      "type": "text",
+      "text": "can call.  When you build MCP Servers with the `@cloudflare/model-context-protocol` package, you can define tools the [same way as shown in the `@modelcontextprotocol/typescript-sdk` package's examples](https://github.com/modelcontextprotocol/typescript-sdk?tab=readme-ov-file#tools)."
+    },
+    {
+      "type": "text",
+      "text": "See our [list of example servers](https://modelcontextprotocol.io/examples), or [get started building your own server](https://modelcontextprotocol.io/quickstart/server).   # Introduction Source: https://modelcontextprotocol.io/introduction  Get started with the Model Context Protocol (MCP)  <Note>C# SDK released! Check out [what else is new.](/development/updates)</Note>  MCP is an open protocol that standardizes how applications provide context to LLMs. Think of MCP like a USB-C port for AI applications. Just as USB-C provides a standardized way to connect your devices to various peripherals and accessories, MCP provides a standardized way to connect AI models to different data sources and tools.  ## Why MCP?  MCP helps you build agents and complex workflows on top of LLMs. LLMs frequently need to integrate with data and tools, and MCP provides:  * A growing list of pre-built integrations that your LLM can directly plug into * The flexibility to switch between LLM providers and vendors * Best practices for securing your data within your infrastructure  ### General architecture  At its core, MCP follows a client-server architecture where a host application can connect to multiple servers:  ```mermaid flowchart LR     subgraph \"Your Computer\"         Host[\"Host with MCP Client\\n(Claude, IDEs, Tools)\"]         S1[\"MCP Server A\"]         S2[\"MCP Server B"
+    },
+    {
+      "type": "text",
+      "text": "). - **Local MCP connections**: MCP clients connect to MCP servers on the same machine, using [stdio](https://spec.modelcontextprotocol.io/specification/draft/basic/transports/#stdio) as a local transport method.  ### Get Started  Go to the [Getting Started](/agents/guides/remote-mcp-server/) guide to learn how to build and deploy your first remote MCP server to Cloudflare.  ---  # McpAgent — API Reference  URL: https://developers.cloudflare.com/agents/model-context-protocol/mcp-agent-api/  import { Render, TypeScriptExample } from \"~/components\";  When you build MCP Servers on Cloudflare, you extend the [`McpAgent` class](https://github.com/cloudflare/agents/blob/5881c5d23a7f4580600029f69307cfc94743e6b8/packages/agents/src/mcp.ts), from the Agents SDK, like this:  <TypeScriptExample>  ```ts title=\"src/index.ts\" import { McpAgent } from \"agents/mcp\"; import { DurableMCP } from \"@cloudflare/model-context-protocol\";  export class MyMCP extends McpAgent { \tserver = new McpServer({ name: \"Demo\", version: \"1.0.0\" });  \tasync init() { \t\tthis.server.tool( \t\t\t\"add\", \t\t\t{ a: z.number(), b:"
+    },
+    {
+      "type": "text",
+      "text": "For instance, if the client doesn't have access to Claude models but has Gemini, it might map the sonnet hint to `gemini-1.5-pro` based on similar capabilities.  ## Error Handling  Clients **SHOULD** return errors for common failure cases:  Example error:  ```json {   \"jsonrpc\": \"2.0\",   \"id\": 1,   \"error\": {     \"code\": -1,     \"message\": \"User rejected sampling request\"   } } ```  ## Security Considerations  1. Clients **SHOULD** implement user approval controls 2. Both parties **SHOULD** validate message content 3. Clients **SHOULD** respect model preference hints 4. Clients **SHOULD** implement rate limiting 5. Both parties **MUST** handle sensitive data appropriately   # Specification Source: https://modelcontextprotocol.io/specification/2025-03-26/index    [Model Context Protocol](https://modelcontextprotocol.io) (MCP) is an open protocol that enables seamless integration between LLM applications and external data sources and tools. Whether you're building an AI-powered IDE, enhancing a chat interface, or creating custom AI workflows, MCP provides a standardized way to connect LLMs with the context they need."
+    }
+  ]
+}
+````
+
+</details>
+
+> Yes, CloudFlare supports the Model Context Protocol (MCP). You can build and deploy MCP servers on CloudFlare. The documentation indicates that CloudFlare provides packages and examples to help you get started with MCP servers.
+>
+> For more detailed information, you can refer to the [Model Context Protocol documentation on CloudFlare](https://developers.cloudflare.com/agents/model-context-protocol/).
 
 ## Cost Estimation
 
