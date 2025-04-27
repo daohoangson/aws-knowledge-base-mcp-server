@@ -23,7 +23,7 @@ import { experimental_createMCPClient, MCPTransport, streamText } from "ai";
 
   try {
     const tools = await client.tools();
-    console.warn("Got MCP tools", Object.keys(tools));
+    console.warn({ tools: Object.keys(tools) });
 
     const { fullStream } = streamText({
       model: bedrock("amazon.nova-pro-v1:0"),

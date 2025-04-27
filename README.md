@@ -174,6 +174,8 @@ npm run deploy
 
 The client demonstrates how to connect to the MCP server and use its tools with support for both SSE and streamable HTTP transports.
 
+### Setup
+
 ```bash
 cd ai-sdk-mcp-client
 
@@ -193,6 +195,55 @@ npm start -- https://aws-knowledge-base-mcp-server.daohoangson.workers.dev/mcp
 # Test connection to Lambda
 npm start -- https://vc7ejtu4kk3ayeiqofkmxxzada0uwpzr.lambda-url.us-east-1.on.aws/mcp
 ```
+
+### Example output
+
+```
+Created MCP client
+
+{ tools: [ 'search_knowledge_base' ] }
+
+<thinking> To determine if CloudFlare works with the Model Context Protocol (MCP), I need to search the knowledge base for relevant documentation. </thinking>
+
+Tool call: search_knowledge_base {
+  "query": "Does CloudFlare work with Model Context Protocol (MCP)?"
+}
+```
+
+<details><summary>Tool result</summary>
+
+````json
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "includes(\"special_feature\")) {     this.server.tool(\"specialTool\", \"Special feature\", {}, async () => {       // This tool only appears for users with the special_feature permission     });   } } ```  Benefits:  - Authorization check at the tool level ensures proper access control - Allows you to define permission checks once and reuse them across tools - Provides clear feedback to users when permission is denied - Can choose to only present tools that the agent is able to call  ## Next steps  - [Learn how to use the Workers OAuth Provider Library](https://github.com/cloudflare/workers-oauth-provider) - Learn how to use a third-party OAuth provider, using the [GitHub](/agents/guides/remote-mcp-server/#add-authentication) example MCP server.  ---  # Model Context Protocol (MCP)  URL: https://developers.cloudflare.com/agents/model-context-protocol/  You can build and deploy [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) servers on Cloudflare.  ## What is the Model Context Protocol (MCP)?  [Model Context Protocol (MCP)](https://modelcontextprotocol.io) is an open standard that connects AI systems with external applications. Think of MCP like a USB-C port for AI applications."
+    },
+    {
+      "type": "text",
+      "text": "can call.  When you build MCP Servers with the `@cloudflare/model-context-protocol` package, you can define tools the [same way as shown in the `@modelcontextprotocol/typescript-sdk` package's examples](https://github.com/modelcontextprotocol/typescript-sdk?tab=readme-ov-file#tools)."
+    },
+    {
+      "type": "text",
+      "text": "See our [list of example servers](https://modelcontextprotocol.io/examples), or [get started building your own server](https://modelcontextprotocol.io/quickstart/server).   # Introduction Source: https://modelcontextprotocol.io/introduction  Get started with the Model Context Protocol (MCP)  <Note>C# SDK released! Check out [what else is new.](/development/updates)</Note>  MCP is an open protocol that standardizes how applications provide context to LLMs. Think of MCP like a USB-C port for AI applications. Just as USB-C provides a standardized way to connect your devices to various peripherals and accessories, MCP provides a standardized way to connect AI models to different data sources and tools.  ## Why MCP?  MCP helps you build agents and complex workflows on top of LLMs. LLMs frequently need to integrate with data and tools, and MCP provides:  * A growing list of pre-built integrations that your LLM can directly plug into * The flexibility to switch between LLM providers and vendors * Best practices for securing your data within your infrastructure  ### General architecture  At its core, MCP follows a client-server architecture where a host application can connect to multiple servers:  ```mermaid flowchart LR     subgraph \"Your Computer\"         Host[\"Host with MCP Client\\n(Claude, IDEs, Tools)\"]         S1[\"MCP Server A\"]         S2[\"MCP Server B"
+    },
+    {
+      "type": "text",
+      "text": "). - **Local MCP connections**: MCP clients connect to MCP servers on the same machine, using [stdio](https://spec.modelcontextprotocol.io/specification/draft/basic/transports/#stdio) as a local transport method.  ### Get Started  Go to the [Getting Started](/agents/guides/remote-mcp-server/) guide to learn how to build and deploy your first remote MCP server to Cloudflare.  ---  # McpAgent — API Reference  URL: https://developers.cloudflare.com/agents/model-context-protocol/mcp-agent-api/  import { Render, TypeScriptExample } from \"~/components\";  When you build MCP Servers on Cloudflare, you extend the [`McpAgent` class](https://github.com/cloudflare/agents/blob/5881c5d23a7f4580600029f69307cfc94743e6b8/packages/agents/src/mcp.ts), from the Agents SDK, like this:  <TypeScriptExample>  ```ts title=\"src/index.ts\" import { McpAgent } from \"agents/mcp\"; import { DurableMCP } from \"@cloudflare/model-context-protocol\";  export class MyMCP extends McpAgent { \tserver = new McpServer({ name: \"Demo\", version: \"1.0.0\" });  \tasync init() { \t\tthis.server.tool( \t\t\t\"add\", \t\t\t{ a: z.number(), b:"
+    },
+    {
+      "type": "text",
+      "text": "For instance, if the client doesn't have access to Claude models but has Gemini, it might map the sonnet hint to `gemini-1.5-pro` based on similar capabilities.  ## Error Handling  Clients **SHOULD** return errors for common failure cases:  Example error:  ```json {   \"jsonrpc\": \"2.0\",   \"id\": 1,   \"error\": {     \"code\": -1,     \"message\": \"User rejected sampling request\"   } } ```  ## Security Considerations  1. Clients **SHOULD** implement user approval controls 2. Both parties **SHOULD** validate message content 3. Clients **SHOULD** respect model preference hints 4. Clients **SHOULD** implement rate limiting 5. Both parties **MUST** handle sensitive data appropriately   # Specification Source: https://modelcontextprotocol.io/specification/2025-03-26/index    [Model Context Protocol](https://modelcontextprotocol.io) (MCP) is an open protocol that enables seamless integration between LLM applications and external data sources and tools. Whether you're building an AI-powered IDE, enhancing a chat interface, or creating custom AI workflows, MCP provides a standardized way to connect LLMs with the context they need."
+    }
+  ]
+}
+````
+
+</details>
+
+> Yes, CloudFlare supports the Model Context Protocol (MCP). You can build and deploy MCP servers on CloudFlare. The documentation indicates that CloudFlare provides packages and examples to help you get started with MCP servers.
+>
+> For more detailed information, you can refer to the [Model Context Protocol documentation on CloudFlare](https://developers.cloudflare.com/agents/model-context-protocol/).
 
 ## Cost Estimation
 
