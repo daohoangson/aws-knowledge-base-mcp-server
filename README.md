@@ -57,12 +57,12 @@ A Model Context Protocol (MCP) server implementation that enables AI assistants 
 
    - Provides a `search_knowledge_base` tool for AI assistants
    - Integrates with AWS Bedrock for document retrieval
-   - Supports both SSE (deprecated) and Streamable HTTP transports
+   - Supports both SSE (deprecated) and streamable HTTP transports
    - Runs on Cloudflare Workers with Node.js compatibility
 
 3. **MCP Client** (`/ai-sdk-mcp-client`): A demo client that:
-   - Uses [AI SDK by Vercel](https://sdk.vercel.ai) with Gemini 2.5 Flash model
-   - Connects to the MCP server via SSE transport
+   - Uses [AI SDK by Vercel](https://sdk.vercel.ai) with Nova Pro model
+   - Acts as a MCP client, supporting both SSE and streamable HTTP transports
    - Streams text responses with tool calls
 
 ```mermaid
@@ -71,6 +71,7 @@ graph TD
     S3[S3 Bucket] -->|Stores Documents| KnowledgeBase
     TitanModel[Titan Embed Text V2] -->|Embedding Model| KnowledgeBase
     Lambda -->|Retrieve API| KnowledgeBase
+    NovaPro[Nova Pro]
   end
 
   subgraph Pinecone
@@ -81,9 +82,10 @@ graph TD
     Worker -->|Retrieve API| KnowledgeBase
   end
 
-  LLM[LLM Model] -->|MCP<br />Streamable HTTP| Lambda
-  LLM -->|MCP<br />Server Sent Event| Worker
-  LLM -->|MCP<br />Streamable HTTP| Worker
+  Demo -->|InvokeModel API| NovaPro
+  Demo -->|MCP<br />Streamable HTTP| Lambda
+  Demo -->|MCP<br />Server Sent Event| Worker
+  Demo -->|MCP<br />Streamable HTTP| Worker
 ```
 
 ## Infrastructure
@@ -159,11 +161,13 @@ npm run deploy
 
 ## MCP Client
 
-The demo client demonstrates how to connect to the MCP server and use its tools.
+The client demonstrates how to connect to the MCP server and use its tools with support for both SSE and streamable HTTP transports.
 
 ### Environment Variables
 
-- `GOOGLE_GENERATIVE_AI_API_KEY` - Google AI API key for Gemini model access
+- `AWS_ACCESS_KEY_ID` - AWS access key for Bedrock API
+- `AWS_SECRET_ACCESS_KEY` - AWS secret key for Bedrock API
+- `AWS_REGION` - AWS region (e.g., "us-east-1")
 
 ### Setup
 
@@ -174,17 +178,19 @@ cd ai-sdk-mcp-client
 npm install
 
 # Set required environment variables
-export GOOGLE_GENERATIVE_AI_API_KEY="your-google-ai-api-key"
+export AWS_ACCESS_KEY_ID="your-aws-access-key"
+export AWS_SECRET_ACCESS_KEY="your-aws-secret-key"
+export AWS_REGION="us-east-1"
 
-# Run the demo client
+# Connect to CloudFlare with SSE transport
 npm start -- https://aws-knowledge-base-mcp-server.daohoangson.workers.dev/sse
+
+# Connect to CloudFlare with streamable HTTP transport
+npm start -- https://aws-knowledge-base-mcp-server.daohoangson.workers.dev/mcp
+
+# Connect to Lambda
+npm start -- https://vc7ejtu4kk3ayeiqofkmxxzada0uwpzr.lambda-url.us-east-1.on.aws/mcp
 ```
-
-The client will:
-
-1. Connect to the MCP server via SSE transport
-2. Use Gemini model to process a sample query
-3. Stream the response with tool calls and results to the console
 
 ## Cost Estimation
 
