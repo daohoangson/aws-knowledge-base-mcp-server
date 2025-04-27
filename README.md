@@ -90,25 +90,33 @@ graph TD
 
 ## Infrastructure
 
-### Environment Variables
-
-- `CDK_APP_ID` - Unique identifier for the CDK stack
-- `PINECONE_API_KEY` - API key for Pinecone vector store
-
 ### Setup
 
 ```bash
 cd cdk
 
-# Install dependencies
 npm install
 
-# Set required environment variables
-export CDK_APP_ID="your-app-id"
-export PINECONE_API_KEY="your-pinecone-api-key"
+# Unique identifier for the CDK stack
+export CDK_APP_ID="DocsMcpServer"
+
+# Pinecone credentials to manage vector databases
+export PINECONE_API_KEY="pcsk_foo"
 
 # Deploy the stack
 npx cdk deploy
+```
+
+### Example output
+
+```
+DocsMcpServer.AwsAccessKeyId = AKI123
+DocsMcpServer.AwsRegion = us-east-1
+DocsMcpServer.AwsSecretAccessKey = 4cQ456
+DocsMcpServer.DataSourceId = OD6LTXXUNH
+DocsMcpServer.DocsBucketName = docsmcpserver-docsbucketa5ce02e3-gg8g3crhlo1j
+DocsMcpServer.KnowledgeBaseId = GZUYX1EGMF
+DocsMcpServer.McpServerUrl = https://vc7ejtu4kk3ayeiqofkmxxzada0uwpzr.lambda-url.us-east-1.on.aws/
 ```
 
 ## Documentation Updates
@@ -118,10 +126,10 @@ The `/docs` directory contains scripts to update the knowledge base with the lat
 ```bash
 cd docs
 
-# Set required environment variables
-export DOCS_BUCKET_NAME="your-bucket-name"
-export KNOWLEDGE_BASE_ID="your-kb-id"
-export DATA_SOURCE_ID="your-ds-id"
+# Set environment variables from the CDK output
+export DATA_SOURCE_ID="OD6LTXXUNH"
+export DOCS_BUCKET_NAME="docsmcpserver-docsbucketa5ce02e3-gg8g3crhlo1j"
+export KNOWLEDGE_BASE_ID="GZUYX1EGMF"
 
 # Run the update script
 ./update.sh
@@ -137,25 +145,28 @@ This will:
 
 The MCP server provides a `search_knowledge_base` tool that can be used by AI assistants to search through indexed documents. The tool accepts a query string and returns relevant documentation.
 
-### Environment Variables
+Create `.dev.vars` with the following variables from the CDK output:
 
-- `AWS_ACCESS_KEY_ID` - AWS access key for Bedrock API
-- `AWS_SECRET_ACCESS_KEY` - AWS secret key for Bedrock API
-- `AWS_REGION` - AWS region (e.g., "us-east-1")
-- `KNOWLEDGE_BASE_ID` - Bedrock Knowledge Base ID
+```
+AWS_ACCESS_KEY_ID=AKI123
+AWS_REGION=us-east-1
+AWS_SECRET_ACCESS_KEY=4cQ456
+KNOWLEDGE_BASE_ID=GZUYX1EGMF
+```
 
 ### Setup
 
 ```bash
 cd cloudflare-mcp-server
 
-# Install dependencies
 npm install
 
-# Configure Wrangler
-# Update wrangler.jsonc with your AWS credentials and Knowledge Base ID
+npm run cf-typegen
 
-# Deploy to Cloudflare
+# run locally
+npm run dev
+
+# or deploy to Cloudflare
 npm run deploy
 ```
 
@@ -163,32 +174,23 @@ npm run deploy
 
 The client demonstrates how to connect to the MCP server and use its tools with support for both SSE and streamable HTTP transports.
 
-### Environment Variables
-
-- `AWS_ACCESS_KEY_ID` - AWS access key for Bedrock API
-- `AWS_SECRET_ACCESS_KEY` - AWS secret key for Bedrock API
-- `AWS_REGION` - AWS region (e.g., "us-east-1")
-
-### Setup
-
 ```bash
 cd ai-sdk-mcp-client
 
-# Install dependencies
 npm install
 
-# Set required environment variables
-export AWS_ACCESS_KEY_ID="your-aws-access-key"
-export AWS_SECRET_ACCESS_KEY="your-aws-secret-key"
+# Set environment variables from the CDK output
+export AWS_ACCESS_KEY_ID="AKI123"
 export AWS_REGION="us-east-1"
+export AWS_SECRET_ACCESS_KEY="4cQ456"
 
-# Connect to CloudFlare with SSE transport
+# Test connection to CloudFlare with SSE transport
 npm start -- https://aws-knowledge-base-mcp-server.daohoangson.workers.dev/sse
 
-# Connect to CloudFlare with streamable HTTP transport
+# Test connection to CloudFlare with streamable HTTP transport
 npm start -- https://aws-knowledge-base-mcp-server.daohoangson.workers.dev/mcp
 
-# Connect to Lambda
+# Test connection to Lambda
 npm start -- https://vc7ejtu4kk3ayeiqofkmxxzada0uwpzr.lambda-url.us-east-1.on.aws/mcp
 ```
 
