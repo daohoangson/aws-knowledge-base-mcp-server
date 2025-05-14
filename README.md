@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/daohoangson-aws-knowledge-base-mcp-server-badge.png)](https://mseep.ai/app/daohoangson-aws-knowledge-base-mcp-server)
+
 # AWS Knowledge Base MCP Server
 
 ## Usage
